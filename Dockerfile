@@ -3,11 +3,26 @@ USER root
 COPY run.sh ./run.sh
 RUN chmod +x ./run.sh
 
-RUN mkdir -p /tmp/download && \
- curl -L https://download.docker.com/linux/static/stable/x86_64/docker-19.03.3.tgz | tar -xz -C /tmp/download && \
- rm -rf /tmp/download/docker/dockerd && \
- mv /tmp/download/docker/docker* /usr/local/bin/ && \
- rm -rf /tmp/download
+
+RUN apt-get update && \
+	apt-get -y install apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg2 \
+    software-properties-common && \
+	curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg > /tmp/dkey; apt-key add /tmp/dkey && \
+	add-apt-repository \
+   	"deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+   	$(lsb_release -cs) \
+   	stable" && \
+	apt-get update && \
+	apt-get -y install docker-ce
+
+#RUN mkdir -p /tmp/download && \
+# curl -L https://download.docker.com/linux/static/stable/x86_64/docker-19.03.3.tgz | tar -xz -C /tmp/download && \
+# rm -rf /tmp/download/docker/dockerd && \
+# mv /tmp/download/docker/docker* /usr/local/bin/ && \
+# rm -rf /tmp/download
 # groupadd -g 999 docker && \
 # usermod -aG docker jenkins &&\
 # gpasswd -a jenkins docker
@@ -17,4 +32,4 @@ RUN chmod +x /usr/local/bin/docker-compose
 
 #USER jenkins
 
-ENTRYPOINT ["/bin/bash","-c","./run.sh"]
+#ENTRYPOINT ["/bin/bash","-c","./run.sh"]
